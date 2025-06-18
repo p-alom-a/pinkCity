@@ -83,6 +83,7 @@ export default function useCharacterControl(socket, characterId, initialPosition
             rotation: newRotation
           });
           lastEmitTime.current = now;
+          lastKeysPressedString.current = keysPressedString;
         }
       } else {
         // Envoi systématique de l'état 'arrêté' si toutes les touches sont relâchées et que ce n'est pas déjà l'état envoyé
@@ -102,6 +103,7 @@ export default function useCharacterControl(socket, characterId, initialPosition
             rotation: newRotation
           });
           lastEmitTime.current = now;
+          lastKeysPressedString.current = keysPressedString;
         }
       }
     };
