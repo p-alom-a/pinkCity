@@ -6,7 +6,7 @@ import { atom } from "jotai";
 export const characterAtom = atom([]);
 export const currentPlayerIdAtom = atom(null);
 
-let socket = null;
+const socket = io();
 
 export const UseSocket = ({ pseudo }) => {
   const setCharacters = useSetAtom(characterAtom);
@@ -16,7 +16,6 @@ export const UseSocket = ({ pseudo }) => {
   useEffect(() => {
     if (!pseudo) return;
 
-    socket = io("http://localhost:3001", { query: { pseudo } });
     socketRef.current = socket;
     
     const onConnect = () => {
