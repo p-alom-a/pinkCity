@@ -24,7 +24,25 @@ export function Model({
   const { actions } = useAnimations(animations, group);
 
   // Mouvement : hook seulement pour le joueur courant
-  const movementData = isCurrentPlayer ? useMovement(socket, characterId, position) : { position, keysPressed: {}, rotation, animation: "CharacterArmature|Idle" };
+  const movementData = isCurrentPlayer
+    ? useMovement(socket, characterId, position)
+    : {
+        position,
+        keysPressed: {},
+        rotation,
+        animation: (() => {
+          // Pour les autres joueurs, on déduit l'animation à partir de keysPressed
+          // Si char.keysPressed existe et qu'une touche de déplacement est true, on met "Run"
+          // Sinon "Idle"
+          if (props.keysPressed) {
+            const moving = Object.keys(props.keysPressed).some(
+              (key) => props.keysPressed[key]
+            );
+            return moving ? "CharacterArmature|Run" : "CharacterArmature|Idle";
+          }
+          return "CharacterArmature|Idle";
+        })(),
+      };
 
   // Joue l'animation courante
   useCharacterAnimation(actions, movementData.animation);
