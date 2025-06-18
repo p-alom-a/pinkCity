@@ -4,6 +4,7 @@ import { useGLTF, useAnimations, Text } from '@react-three/drei';
 import { SkeletonUtils } from 'three-stdlib';
 import useMovement from '../../hooks/useMovement';
 import useCharacterAnimation from '../../hooks/useCharacterAnimation';
+import { getAnimationFromKeys } from '../../utils/animationUtils';
 
 export function Model({
   hairColor = "green",
@@ -30,18 +31,7 @@ export function Model({
         position,
         keysPressed: {},
         rotation,
-        animation: (() => {
-          // Pour les autres joueurs, on déduit l'animation à partir de keysPressed
-          // Si char.keysPressed existe et qu'une touche de déplacement est true, on met "Run"
-          // Sinon "Idle"
-          if (props.keysPressed) {
-            const moving = Object.keys(props.keysPressed).some(
-              (key) => props.keysPressed[key]
-            );
-            return moving ? "CharacterArmature|Run" : "CharacterArmature|Idle";
-          }
-          return "CharacterArmature|Idle";
-        })(),
+        animation: getAnimationFromKeys(props.keysPressed),
       };
 
   // Joue l'animation courante

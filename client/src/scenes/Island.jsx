@@ -70,7 +70,7 @@ export function Island() {
                 isCurrentPlayer={char.id === currentPlayerId}
                 socket={socket}
                 characterId={char.id}
-                keysPressed={char.keysPressed}
+                keysPressed={char.keysPressed || {}}
               />
             ))}
             

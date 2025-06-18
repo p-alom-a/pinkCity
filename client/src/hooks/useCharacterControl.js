@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { getAnimationFromKeys } from '../utils/animationUtils';
 
 export default function useCharacterControl(socket, characterId, initialPosition = [0, 0, 0]) {
   const [position, setPosition] = useState(initialPosition);
@@ -30,7 +31,7 @@ export default function useCharacterControl(socket, characterId, initialPosition
       let newPosition = [...position];
       let moved = false;
       let newRotation = rotation;
-      let newAnimation = "CharacterArmature|Idle";
+      let newAnimation = getAnimationFromKeys(keysPressed);
 
       if (keysPressed['ArrowUp']) {
         newPosition[2] -= speed;
