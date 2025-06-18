@@ -71,10 +71,24 @@ io.on("connection", (socket) => {
   socket.on("move", (data) => {
     const idx = characters.findIndex((character) => character.id === socket.id);
     if (idx !== -1) {
-      characters[idx].position = data.position;
-      characters[idx].keysPressed = data.keysPressed;
-      characters[idx].rotation = data.rotation;
-      io.emit("characters", characters);
+      // Vérification de changement effectif
+      const char = characters[idx];
+      const changed =
+        JSON.stringify(char.position) !== JSON.stringify(data.position) ||
+        JSON.stringify(char.keysPressed) !== JSON.stringify(data.keysPressed) ||
+        char.rotation !== data.rotation;
+      if (changed) {
+        char.position = data.position;
+        char.keysPressed = data.keysPressed;
+        char.rotation = data.rotation;
+        // Broadcast uniquement l'avatar modifié
+        io.emit("character:update", {
+          id: socket.id,
+          position: data.position,
+          keysPressed: data.keysPressed,
+          rotation: data.rotation
+        });
+      }
     }
   });
 
