@@ -5,6 +5,7 @@ export default function Chat({ socket, pseudo }) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
     if (!socket) return;
@@ -43,6 +44,8 @@ export default function Chat({ socket, pseudo }) {
     }
   };
 
+  const toggleCollapse = () => setCollapsed((c) => !c);
+
   return (
     <div style={{
       position: 'absolute',
@@ -59,7 +62,20 @@ export default function Chat({ socket, pseudo }) {
       fontFamily: 'sans-serif',
       overflow: 'hidden',
     }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', background: '#fafbfc', padding: '4px 10px' }}>
+        <span style={{ fontWeight: 'bold', flex: 1 }}>Chat</span>
+        <button onClick={toggleCollapse} style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          fontSize: 18,
+          color: '#007bff',
+          padding: 0,
+        }} title={collapsed ? 'Agrandir' : 'Réduire'}>
+          {collapsed ? '▴' : '▾'}
+        </button>
+      </div>
+      <div style={{ flex: 1, overflowY: 'auto', padding: 10, maxHeight: collapsed ? 120 : 300, minHeight: collapsed ? 120 : 300, transition: 'max-height 0.2s, min-height 0.2s' }}>
         {messages.map((msg, i) => (
           <div key={i} style={{
             marginBottom: 6,
