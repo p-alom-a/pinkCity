@@ -64,7 +64,7 @@ export function Island() {
                 topColor={char.topColor}
                 bottomColor={char.bottomColor}
                 position={char.position}
-                rotation={char.rotation || 0}
+                rotation={typeof char.rotation === 'number' ? char.rotation : 0}
                 pseudo={char.pseudo || ''}
                 isCurrentPlayer={char.id === currentPlayerId}
                 socket={socket}
