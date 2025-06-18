@@ -70,13 +70,23 @@ export default function useCharacterControl(socket, characterId, initialPosition
       newPosition[2] = Math.max(-10, Math.min(10, newPosition[2]));
       setRotation(newRotation);
       setAnimation(newAnimation);
+      const now = Date.now();
       if (moved) {
         setPosition(newPosition);
-        const now = Date.now();
         if (socket && now - lastEmitTime.current > EMIT_INTERVAL) {
           socket.emit('move', {
             position: newPosition,
             keysPressed
+          });
+          lastEmitTime.current = now;
+        }
+      } else {
+        // Si aucune touche n'est pressée, on envoie aussi l'état pour arrêter l'animation
+        const anyKeyPressed = Object.values(keysPressed).some(Boolean);
+        if (!anyKeyPressed && socket && now - lastEmitTime.current > EMIT_INTERVAL) {
+          socket.emit('move', {
+            position: newPosition,
+            keysPressed: {}
           });
           lastEmitTime.current = now;
         }
