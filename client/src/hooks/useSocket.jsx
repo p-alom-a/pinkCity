@@ -15,9 +15,10 @@ export const UseSocket = ({ pseudo }) => {
     if (!pseudo) return;
 
     // Crée un socket unique pour cet onglet
-    const socket = io({
-      query: { pseudo }
-    });
+    const socket = io(
+      import.meta.env.DEV ? 'http://localhost:8080' : undefined,
+      { query: { pseudo } }
+    );
     socketRef.current = socket;
 
     const onConnect = () => setCurrentPlayerId(socket.id);
