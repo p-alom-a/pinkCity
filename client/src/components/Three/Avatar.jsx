@@ -51,7 +51,7 @@ export function Model({
     <group
       ref={group}
       position={movementData.position}
-      rotation={[0, movementData.rotation, 0]}
+      rotation-y={movementData.rotation}
       {...props}
       dispose={null}
     >

@@ -64,7 +64,7 @@ io.on("connection", (socket) => {
     if (idx !== -1) {
       characters[idx].position = data.position;
       characters[idx].keysPressed = data.keysPressed;
-      // Broadcast à tous les clients (y compris l'expéditeur)
+      characters[idx].rotation = data.rotation;
       io.emit("characters", characters);
     }
   });
