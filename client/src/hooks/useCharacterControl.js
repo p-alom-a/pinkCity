@@ -7,6 +7,7 @@ export default function useCharacterControl(socket, characterId, initialPosition
   const [animation, setAnimation] = useState("CharacterArmature|Idle");
   const lastEmitTime = useRef(0);
   const EMIT_INTERVAL = 50;
+  const lastKeysPressedString = useRef(JSON.stringify({}));
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -31,38 +32,38 @@ export default function useCharacterControl(socket, characterId, initialPosition
       let newRotation = rotation;
       let newAnimation = "CharacterArmature|Idle";
 
-      if (keysPressed['KeyW'] || keysPressed['ArrowUp']) {
+      if (keysPressed['ArrowUp']) {
         newPosition[2] -= speed;
         newRotation = Math.PI;
         newAnimation = "CharacterArmature|Run";
         moved = true;
-      } else if (keysPressed['KeyS'] || keysPressed['ArrowDown']) {
+      } else if (keysPressed['ArrowDown']) {
         newPosition[2] += speed;
         newRotation = 0;
         newAnimation = "CharacterArmature|Run";
         moved = true;
-      } else if (keysPressed['KeyA'] || keysPressed['ArrowLeft']) {
+      } else if (keysPressed['ArrowLeft']) {
         newPosition[0] -= speed;
         newRotation = -Math.PI / 2;
         newAnimation = "CharacterArmature|Run";
         moved = true;
-      } else if (keysPressed['KeyD'] || keysPressed['ArrowRight']) {
+      } else if (keysPressed['ArrowRight']) {
         newPosition[0] += speed;
         newRotation = Math.PI / 2;
         newAnimation = "CharacterArmature|Run";
         moved = true;
       }
       // Diagonales
-      if ((keysPressed['KeyW'] || keysPressed['ArrowUp']) && (keysPressed['KeyA'] || keysPressed['ArrowLeft'])) {
+      if ((keysPressed['ArrowUp']) && (keysPressed['ArrowLeft'])) {
         newRotation = 3 * Math.PI / 4;
       }
-      if ((keysPressed['KeyW'] || keysPressed['ArrowUp']) && (keysPressed['KeyD'] || keysPressed['ArrowRight'])) {
+      if ((keysPressed['ArrowUp']) && (keysPressed['ArrowRight'])) {
         newRotation = -3 * Math.PI / 4;
       }
-      if ((keysPressed['KeyS'] || keysPressed['ArrowDown']) && (keysPressed['KeyA'] || keysPressed['ArrowLeft'])) {
+      if ((keysPressed['ArrowDown']) && (keysPressed['ArrowLeft'])) {
         newRotation = Math.PI / 4;
       }
-      if ((keysPressed['KeyS'] || keysPressed['ArrowDown']) && (keysPressed['KeyD'] || keysPressed['ArrowRight'])) {
+      if ((keysPressed['ArrowDown']) && (keysPressed['ArrowRight'])) {
         newRotation = -Math.PI / 4;
       }
       // Limites
@@ -71,6 +72,8 @@ export default function useCharacterControl(socket, characterId, initialPosition
       setRotation(newRotation);
       setAnimation(newAnimation);
       const now = Date.now();
+      const anyKeyPressed = Object.values(keysPressed).some(Boolean);
+      const keysPressedString = JSON.stringify(keysPressed);
       if (moved) {
         setPosition(newPosition);
         if (socket && now - lastEmitTime.current > EMIT_INTERVAL) {
@@ -82,17 +85,17 @@ export default function useCharacterControl(socket, characterId, initialPosition
           lastEmitTime.current = now;
         }
       } else {
-        // Si aucune touche n'est pressée, on envoie aussi l'état pour arrêter l'animation
-        const anyKeyPressed = Object.values(keysPressed).some(Boolean);
-        if (!anyKeyPressed && socket && now - lastEmitTime.current > EMIT_INTERVAL) {
+        // Envoi systématique de l'état 'arrêté' si toutes les touches sont relâchées et que ce n'est pas déjà l'état envoyé
+        if (!anyKeyPressed && keysPressedString !== lastKeysPressedString.current && socket && now - lastEmitTime.current > EMIT_INTERVAL) {
+          console.log('Envoi move (arrêt optimisé)', { position: newPosition, keysPressed: {}, rotation: newRotation });
           socket.emit('move', {
             position: newPosition,
             keysPressed: {},
             rotation: newRotation
           });
           lastEmitTime.current = now;
+          lastKeysPressedString.current = keysPressedString;
         } else if (socket && now - lastEmitTime.current > EMIT_INTERVAL) {
-          // Même sans mouvement, on synchronise la rotation
           socket.emit('move', {
             position: newPosition,
             keysPressed,

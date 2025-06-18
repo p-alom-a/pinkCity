@@ -9,6 +9,7 @@ import ModalPseudo from '../components/UI/ModalPseudo'
 import BackButton from '../components/UI/BackButton'
 import Ground from '../components/Three/Ground'
 import { useSkyParams } from '../hooks/useSkyParams'
+import Chat from '../components/UI/Chat'
 
 export function Island() {
   const location = useLocation()
@@ -43,9 +44,9 @@ export function Island() {
       background: '#87CEEB'
     }}>
       <BackButton />
-      
-     
-
+      {pseudo && socket && (
+        <Chat socket={socket} pseudo={pseudo} />
+      )}
       <Canvas camera={{ position: [2, 2, 4], fov: 75 }}>
         {!pseudo && (
           <ModalPseudo open={true} onValidate={setPseudo} />
