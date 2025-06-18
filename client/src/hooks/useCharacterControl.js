@@ -76,7 +76,8 @@ export default function useCharacterControl(socket, characterId, initialPosition
         if (socket && now - lastEmitTime.current > EMIT_INTERVAL) {
           socket.emit('move', {
             position: newPosition,
-            keysPressed
+            keysPressed,
+            rotation: newRotation
           });
           lastEmitTime.current = now;
         }
@@ -86,7 +87,16 @@ export default function useCharacterControl(socket, characterId, initialPosition
         if (!anyKeyPressed && socket && now - lastEmitTime.current > EMIT_INTERVAL) {
           socket.emit('move', {
             position: newPosition,
-            keysPressed: {}
+            keysPressed: {},
+            rotation: newRotation
+          });
+          lastEmitTime.current = now;
+        } else if (socket && now - lastEmitTime.current > EMIT_INTERVAL) {
+          // Même sans mouvement, on synchronise la rotation
+          socket.emit('move', {
+            position: newPosition,
+            keysPressed,
+            rotation: newRotation
           });
           lastEmitTime.current = now;
         }
