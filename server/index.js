@@ -23,6 +23,7 @@ app.get("*", (req, res) => {
 });
 
 const characters = [];
+let chatHistory = [];
 
 const generateRandomPosition = () => {
   return [Math.random() * 3, 0, Math.random() * 3];
@@ -39,6 +40,7 @@ io.on("connection", (socket) => {
     id: socket.id,
     position: generateRandomPosition(),
     keysPressed: {},
+    rotation: 0,
     hairColor: generateRandomHexColor(),
     topColor: generateRandomHexColor(),
     bottomColor: generateRandomHexColor(),
@@ -48,11 +50,18 @@ io.on("connection", (socket) => {
   io.emit("characters", characters);
   console.log('Characters actuels:', characters);
 
+  // Notifier tous les clients de la connexion
+  io.emit("chat message", { type: "info", message: `${pseudo} a rejoint la partie.`, pseudo, timestamp: Date.now() });
+  chatHistory.push({ type: "info", message: `${pseudo} a rejoint la partie.`, pseudo, timestamp: Date.now() });
+
   socket.on("disconnect", () => {
     console.log("a user disconnected");
     const idx = characters.findIndex((character) => character.id === socket.id);
     if (idx !== -1) {
+      const pseudo = characters[idx].pseudo;
       characters.splice(idx, 1);
+      // Notifier tous les clients de la déconnexion
+      io.emit("chat message", { type: "info", message: `${pseudo} a quitté la partie.`, pseudo, timestamp: Date.now() });
     }
     io.emit("characters", characters);
     console.log('Characters actuels:', characters);
@@ -66,6 +75,19 @@ io.on("connection", (socket) => {
       characters[idx].keysPressed = data.keysPressed;
       characters[idx].rotation = data.rotation;
       io.emit("characters", characters);
+    }
+  });
+
+  // Gestion des messages de chat
+  socket.on("chat message", (data) => {
+    // data: { pseudo, message }
+    if (typeof data.message === 'string' && data.message.trim().length > 0) {
+      io.emit("chat message", {
+        type: "chat",
+        pseudo: data.pseudo,
+        message: data.message,
+        timestamp: Date.now()
+      });
     }
   });
 });
