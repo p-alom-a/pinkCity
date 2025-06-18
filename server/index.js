@@ -14,12 +14,12 @@ const io = new Server(httpServer, {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Sert le front buildé
-app.use(express.static(path.join(__dirname, "dist")));
+// Sert le front buildé (chemin corrigé)
+app.use(express.static(path.join(__dirname, "../client/dist")));
 
 // Fallback SPA
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist/index.html"));
+  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
 });
 
 const characters = [];
@@ -47,6 +47,7 @@ io.on("connection", (socket) => {
   socket.emit("hello");
   io.emit("characters", characters);
   console.log('Characters actuels:', characters);
+
   socket.on("disconnect", () => {
     console.log("a user disconnected");
     const idx = characters.findIndex((character) => character.id === socket.id);
@@ -56,6 +57,7 @@ io.on("connection", (socket) => {
     io.emit("characters", characters);
     console.log('Characters actuels:', characters);
   });
+
   // Gestion des mouvements avec position et touches pressées
   socket.on("move", (data) => {
     const idx = characters.findIndex((character) => character.id === socket.id);
