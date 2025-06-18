@@ -1,12 +1,26 @@
-import { Server } from 'socket.io';
+import express from "express";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const io = new Server({
+const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
-  },
+    origin: "*"
+  }
 });
 
-io.listen(3001);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Sert le front buildé
+app.use(express.static(path.join(__dirname, "dist")));
+
+// Fallback SPA
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist/index.html"));
+});
 
 const characters = [];
 
@@ -20,9 +34,7 @@ const generateRandomHexColor = () => {
 
 io.on("connection", (socket) => {
   console.log("a user connected");
-  
   const pseudo = socket.handshake.query.pseudo || '';
-  
   characters.push({
     id: socket.id,
     position: generateRandomPosition(),
@@ -32,11 +44,9 @@ io.on("connection", (socket) => {
     bottomColor: generateRandomHexColor(),
     pseudo
   });
-
   socket.emit("hello");
   io.emit("characters", characters);
   console.log('Characters actuels:', characters);
-
   socket.on("disconnect", () => {
     console.log("a user disconnected");
     const idx = characters.findIndex((character) => character.id === socket.id);
@@ -46,16 +56,19 @@ io.on("connection", (socket) => {
     io.emit("characters", characters);
     console.log('Characters actuels:', characters);
   });
-
   // Gestion des mouvements avec position et touches pressées
   socket.on("move", (data) => {
     const idx = characters.findIndex((character) => character.id === socket.id);
     if (idx !== -1) {
       characters[idx].position = data.position;
       characters[idx].keysPressed = data.keysPressed;
-      
       // Broadcast à tous les autres clients (pas à l'expéditeur)
       socket.broadcast.emit("characters", characters);
     }
   });
+});
+
+const PORT = process.env.PORT || 8080;
+httpServer.listen(PORT, () => {
+  console.log("Serveur lancé sur le port", PORT);
 });

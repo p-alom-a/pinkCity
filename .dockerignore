@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+**/.DS_Store
+*.log
+.git
+.gitignore
+.vscode
+.env
+
+client/node_modules
+server/node_modules
+client/dist
+npm-debug.log
+.pnpm-store 
